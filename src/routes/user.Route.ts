@@ -1,7 +1,10 @@
 import express from "express";
-import { createUser } from '../controllers/user.controller';
+import { registerUser, loginUser, updateUserRole } from '../controllers/user.controller';
+import { protect, adminOnly } from '../middlewares/authMiddleware'
 
 const router = express.Router();
-router.post('/createUser', createUser); 
+router.post('/registerUser', registerUser);
+router.post('/loginUser', loginUser);
+router.patch('/users/:id/role', protect, adminOnly, updateUserRole)
 
 export default router;
