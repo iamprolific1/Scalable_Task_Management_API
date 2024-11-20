@@ -69,5 +69,29 @@ describe('Authentication Endpoints', ()=> {
         expect(res.body).toHaveProperty('message', 'User authenticated successfully');
     });
 
+    it('should update user role from admin', async()=> {
+        const user = await User.create({
+            username: 'testUser4',
+            email: 'testUser4@example.com',
+            password: await bcrypt.hash('testPassword4', 10),
+            role: 'User',
+        });
 
+        const admin = await User.create({
+            username: 'adminUser',
+            email: 'admin@example.com',
+            password: await bcrypt.hash('adminPassword123', 10),
+            role: 'Admin',
+        });
+
+        const token = generateToken(admin._id as string, admin.role);
+
+        const res = await request(app)
+            .patch(`/api/auth/users/${user._id}/role`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({ role: 'Admin' })
+        expect(res.status).toBe(200);
+
+
+    })
 })
