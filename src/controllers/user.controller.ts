@@ -99,4 +99,68 @@ export const updateUserRole  = async (req: Request, res: Response)=> {
         res.status(500).json({ message: "Internal Server Error" });
         return;
     }
+};
+
+export const getAllUsers = async(req: Request, res: Response)=> {
+    try {
+        const users = await User.find({ role: 'User' });
+        if (!users) {
+            res.status(404).json({ message: "No data found in the database" });
+            return;
+        }
+        res.status(200).json({ message: "Users data retrieved successfully", users })
+        return;
+    } catch (error) {
+        console.error("Error retrieving users data: ", error);
+        res.status(500).json({ message: "Internal server error" });
+        return;
+    }
+}
+
+export const getUser = async(req: Request, res: Response)=> {
+    const { id } = req.params;
+    try{
+        if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
+            res.status(400).json({ message: "Invalid ID format" });
+            return;
+        }
+
+        const user = await User.findById(id);
+        if (!user) {
+            res.status(404).json({ message: "User not found" });
+            return;
+        }
+
+        res.status(200).json({ message: "User with specified ID found", user });
+        return;
+    } catch(error) {
+        console.error("Error retrieving user: ", error);
+        res.status(500).json({ message: "Internal server error" });
+        return;
+    }
+}
+export const deleteUser = async(req: Request, res: Response)=> {
+    const { id } = req.params;
+
+    try{
+
+        if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
+            res.status(400).json({ message: "Invalid ID format" });
+            return;
+        }
+
+        const user = await User.findById(id);
+        if (!user) {
+            res.status(404).json({ message: "User not found" });
+            return;
+        }
+
+        await User.findByIdAndDelete(id);
+        res.status(200).json({ message: `User with ID ${id} deleted successfully` });
+        return;
+    } catch(error) {
+        console.error("Error deleting user with specified ID: ", error);
+        res.status(500).json({ message: "Internal server error" });
+        return;
+    }
 }

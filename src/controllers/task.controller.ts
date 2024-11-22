@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { Task } from "../models/Task";
-import { User } from "../models/User"
+import { io } from "../server";
 
 export const createTask = async(req: Request, res: Response)=> {
     const { title, description, status, priority, assignedTo } = req.body;
@@ -12,7 +12,6 @@ export const createTask = async(req: Request, res: Response)=> {
             return;
         }
 
-        
         const task = new Task({ 
             title, 
             description, 
@@ -23,6 +22,7 @@ export const createTask = async(req: Request, res: Response)=> {
             createdBy: userId,
         });
         await task.save();
+        io.emit('task-created', { message: "new task created", taskId: task._id, status: task.status })
         res.status(201).json({ message: "New task created successfully!" });
         return;
     } catch (error) {
@@ -47,6 +47,7 @@ export const getTasks = async(req: Request, res: Response)=> {
         }
 
         const tasks = await Task.find(filter).populate("createdBy assignedTo", "username email role");
+        io.emit('retrieve-tasks', { message: "Tasks retrieved successfully", tasks });
         res.status(200).json({ tasks, message: "Tasks retrieved successfully" });
         return;
     } catch(error) {
@@ -66,6 +67,7 @@ export const getTask = async(req: Request, res: Response)=> {
             return;
         }
 
+        io.emit('retrieve-task', { message: "Task found successfully!", task })
         res.status(200).json({ task, message: "Task found successfully!" });
         return;
     } catch (error) {
@@ -93,6 +95,7 @@ export const updateTaskStatus = async(req: Request, res: Response)=> {
         }
 
         task.status = status;
+        io.emit('update-task-status', { message: "Task status update", id: task._id, status: task.status})
         await task.save();
         res.status(200).json({ message: `Task status updated to ${status}`, task });
         return;
@@ -121,6 +124,7 @@ export const deleteTask = async(req: Request, res: Response)=> {
         }
 
         await Task.findByIdAndDelete(id);
+        io.emit('task-deleted', { message: "Task deleted successfully", id: id })
         res.status(200).json({ message: "Task deleted successfully" });
         return;
     } catch (error) {

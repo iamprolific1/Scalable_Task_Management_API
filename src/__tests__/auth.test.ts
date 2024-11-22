@@ -1,8 +1,8 @@
 import request from "supertest";
-import { app } from "../src/server";
+import { app } from "../server";
 import mongoose from "mongoose";
-import { User } from "../src/models/User";
-import { generateToken } from "../src/controllers/user.controller";
+import { User } from "../models/User";
+import { generateToken } from "../controllers/user.controller";
 import bcrypt from 'bcryptjs';
 
 beforeAll(async()=> {
@@ -91,7 +91,70 @@ describe('Authentication Endpoints', ()=> {
             .set('Authorization', `Bearer ${token}`)
             .send({ role: 'Admin' })
         expect(res.status).toBe(200);
+    });
 
+    it('should get all users from database', async()=> {
+        const user = await User.create({
+            username: "testUser5",
+            email: "testUser5@example.com",
+            password: await bcrypt.hash("testPassword4", 10),
+            role: "User",
+        });
 
+        const admin = await User.create({
+            username: "adminUser",
+            email: "admin@example.com",
+            password: await bcrypt.hash("adminPassword123", 10),
+            role: "Admin",
+        });
+
+        const token = generateToken(admin._id as string, admin.role);
+
+        const res = await request(app).get('/api/auth/getAllUsers').set('Authorization', `Bearer ${token}`);
+        expect(res.status).toBe(200);
+        expect(res.body).toHaveProperty('message', "Users data retrieved successfully");
+    });
+
+    it('should get user by ID', async()=> {
+        const user = await User.create({
+            username: "testUser6",
+            email: "testUser6@example.com",
+            password: await bcrypt.hash("testPassword4", 10),
+            role: "User",
+        });
+
+        const admin = await User.create({
+            username: "adminUser",
+            email: "admin@example.com",
+            password: await bcrypt.hash("adminPassword123", 10),
+            role: "Admin",
+        });
+
+        const token = generateToken(admin._id as string, admin.role);
+
+        const res = await request(app).get(`/api/auth/getUser/${user._id}`).set('Authorization', `Bearer ${token}`);
+        expect(res.status).toBe(200);
+        expect(res.body).toHaveProperty('message', "User with specified ID found");
+    });
+
+    it('should delete user with specified ID', async()=> {
+        const user = await User.create({
+            username: "testUser7",
+            email: "testUser7@example.com",
+            password: await bcrypt.hash("testPassword4", 10),
+            role: "User",
+        });
+
+        const admin = await User.create({
+            username: "adminUser",
+            email: "admin@example.com",
+            password: await bcrypt.hash("adminPassword123", 10),
+            role: "Admin",
+        });
+
+        const token = generateToken(admin._id as string, admin.role);
+
+        const res = await request(app).delete(`/api/auth/deleteUser/${user._id}`).set('Authorization', `Bearer ${token}`);
+        expect(res.status).toBe(200);
     })
 })
