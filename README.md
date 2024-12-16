@@ -29,7 +29,7 @@ This project is a backend system for managing tasks with user authentication, ro
 
 1. **Clone the repository:**
     ```bash
-        git clone https://github.com/your-username/Scalable_Task_Management_API.git
+        git clone https://github.com/iamprolific1/Scalable_Task_Management_API.git
         cd Scalable_Task_Management_API
 
 2. **Install dependencies:**
